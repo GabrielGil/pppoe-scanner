@@ -384,6 +384,7 @@ if __name__ == '__main__':
 	print(azul + "════════════════════════" + gris)
 	n = 1
 	total = len(operadores)
+	print(blanco + "[ " + str(0) + " ]  " + amarillo + "No la conozco" + gris)
 	for operador in operadores:
 		nombre = operador[0]
 		vlan = operador[1]
@@ -396,7 +397,7 @@ if __name__ == '__main__':
 	while True:
 		try:
 			opcion = int(input(azul + "\033[KSELECCIONA TU OPERADOR:" + blanco + " "))
-			if opcion > 0 and opcion <= n:
+			if opcion >= 0 and opcion <= n:
 				break
 			else:
 				print(rojo + "   OPCIÓN NO VÁLIDA" + gris)
@@ -418,6 +419,7 @@ if __name__ == '__main__':
 			cursor_arriba(2)
 	# si se ha escogido introducción manual de vlan
 	vlan = 0
+	duracion = 0
 	if opcion == n:
 		guardar_log('   El usuario ha seleccionado introducirla manualmente')
 		while True:
@@ -436,135 +438,187 @@ if __name__ == '__main__':
 				cursor_arriba()
 				print('\033[K')
 				cursor_arriba(2)
+	if opcion == 0:
+		guardar_log('   El usuario no conoce la VLAN')
+		guardar_log('   El usuario selecciona la VLAN de inicio')
+		while True:
+			try:
+				vlan = int(input(azul + "\033[KEn que VLAN empezamos:" + blanco + " "))
+				break
+			except KeyboardInterrupt:
+				print()
+				print()
+				print(rojo + "\033[KInterrumpido por el usuario" + gris)
+				print()
+				sys.exit()
+			except:
+				print(rojo + "   VLAN NO VÁLIDA: debes introducir un número" + gris)
+				time.sleep(1)
+				cursor_arriba()
+				print('\033[K')
+				cursor_arriba(2)
+		guardar_log('   El usuario indica la duracion de busqueda de en cada VLAN')
+		while True:
+			try:
+				duracion = int(input(azul + "\033[KSegundos de busqueda por VLAN:" + blanco + " "))
+				break
+			except KeyboardInterrupt:
+				print()
+				print()
+				print(rojo + "\033[KInterrumpido por el usuario" + gris)
+				print()
+				sys.exit()
+			except:
+				print(rojo + "   DURACION NO VÁLIDA: debes introducir un número" + gris)
+				time.sleep(1)
+				cursor_arriba()
+				print('\033[K')
+				cursor_arriba(2)
 	else:
 		vlan = operadores[opcion-1][1]
 		guardar_log('   El usuario ha escogido la opción nº ' + str(opcion) + ' (vlan: ' + str(vlan) + ')')
-	# cambiamos la VLAN
-	interfaz_vlan = "sniffer." + str(vlan)
-	print()
-	guardar_log('Creando interfaz virtual VLAN ' + str(vlan))
-	#    eliminamos todas las interfaces virtuales que pudiera haber creadas
-	guardar_log('   Eliminando interfaces virtuales existentes')
-	todas = netifaces.interfaces()
-	for item in todas:
-		if "." in item:
-			guardar_log('      Eliminando ' + item)
-			subprocess.run(["sudo", "ip", "link", "delete", item])
-			guardar_log('      Eliminada ' + item)
-	# creamos la interfaz virtual
-	print(azul + "\033[K   Creando interfaz virtual VLAN " + blanco + str(vlan) + azul + ": " + blanco + interfaz_vlan + gris)
-	try:
-		subprocess.run(["sudo", "ip", "link", "add", "link", interfaz, "name", interfaz_vlan, "type", "vlan", "id", str(vlan)])
-		print(verde + "\033[K      Interfaz " + blanco + interfaz_vlan + verde + " creada" + gris)
-		guardar_log('   Interfaz virtual creada')
-	except Exception as e:
-		print(rojo + "\033[K      ERROR" + gris)
-		print()
-		print(blanco + str(e) + gris)
-		print()
-		guardar_log('   ERROR al crear la interfaz virtual')
-		sys.exit()
-	# asignamos una IP a la interfaz virtual
-	print(azul + "\033[K   Asignando IP a " + blanco + interfaz_vlan + gris)
-	guardar_log('Asignando IP a ' + str(interfaz_vlan))
-	try:
-		subprocess.run(["sudo", "ip", "addr", "flush", "dev", interfaz_vlan])
-		subprocess.run(["sudo", "ip", "addr", "add", "10.0.0.1/16", "dev", interfaz_vlan])
-		print(verde + "\033[K      Hecho" + gris)
-		guardar_log('   IP asignada')
-	except Exception as e:
-		print(rojo + "\033[K      ERROR" + gris)
-		print()
-		print(blanco + str(e) + gris)
-		print()
-		guardar_log('   ERROR al asignar la IP')
-		sys.exit()
-	# levantamos la interfaz virtual
-	print(azul + "\033[K   Levantando interfaz " + blanco + interfaz_vlan + gris)
-	guardar_log('Levantando interfaz ' + str(interfaz_vlan))
-	try:
-		subprocess.run(["sudo", "ip", "link", "set", interfaz_vlan, "up"])
-		print(verde + "\033[K      Hecho" + gris)
-		guardar_log('   Interfaz levantada')
-	except Exception as e:
-		print(rojo + "\033[K      ERROR" + gris)
-		print()
-		print(blanco + str(e) + gris)
-		print()
-		guardar_log('   ERROR al levantar la interfaz')
-		sys.exit()
-	# informamos de cómo proceder antes de continuar
-	print(gris)
-	print(azul + "\033[KYA ESTÁ TODO PREPARADO PARA CAPTURAR EL TRÁFICO DEL ROUTER." + gris)
-	print(azul + "\033[KA PARTIR DE ESTE PUNTO YA NO ES NECESARIO ESTAR CONECTADO A INTERNET" + gris)
-	print(azul + "\033[KASÍ QUE, SI QUIERES O LO NECESITAS PARA CONTINUAR, PUEDES DESCONECTARTE." + gris)
-	print(azul + "\033[KCONECTA UN CABLE DE RED DESDE EL ORDENADOR AL PUERTO WAN DEL ROUTER Y ENCIÉNDELO." + gris)
-	print(gris)
-	input(blanco + "\033[KPulsa ENTER cuando estés listo... " + gris)
-	cursor_arriba()
-	matar_procesos()
-	# iniciamos el servidor PPPoE
-	print(azul + "\033[K   Iniciando servidor PPPoE" + gris)
-	try:
-		guardar_log('Iniciando el servidor PPPoE')
-		subprocess.run(["sudo", "pppoe-server", "-C", "ftth", "-I", interfaz_vlan, "-N", "256", "-O", "/etc/ppp/options"])
-		print(verde + "\033[K      Hecho" + gris)
-		guardar_log('   Servidor PPPoE iniciado')
-	except Exception as e:
-		print(rojo + "\033[K      ERROR" + gris)
-		print()
-		print(blanco + str(e) + gris)
-		print()
-		guardar_log('   ERROR: No se ha podido iniciar el servidor PPPoE')
-		sys.exit()
-	# capturamos el tráfico con Tshark
-	print(azul + "\033[K   Iniciando captura de tráfico de red" + gris)
-	try:
-		guardar_log('Iniciando captura de tráfico con "tshark"')
-		subprocess.Popen(["sudo", "tshark", "-i", interfaz_vlan, "-T", "text"], stdout=open(str(path.home()) + "/" + NOMBRE + "/captura.txt", "wb"), stderr=open(os.devnull, 'w'))
-		print(verde + "\033[K      Hecho" + gris)
-		guardar_log('   Captura iniciada')
-	except Exception as e:
-		print(rojo + "\033[K      ERROR" + gris)
-		print()
-		print(blanco + str(e) + gris)
-		print()
-		guardar_log('   ERROR: No se ha podido iniciar la captura')
-		sys.exit()
-	print()
-	print(amarillo + "\33[K   Puedes detener el proceso en cualquier momento pulsando " + blanco + "CTRL+C" + gris)
-	print()
-	usuario = ""
-	password = ""
-	inicio = datetime.datetime.now()
-	while usuario == "" and password == "":
+	while vlan < 4096:
 		try:
-			# mostramos animación de reloj con el tiempo transcurrido
-			animacion_reloj("BUSCANDO...", inicio)
-			archivo = open(str(path.home()) + "/" + NOMBRE + "/captura.txt", "r", encoding="utf-8")
-			for linea in archivo:
-				if 'Authenticate-Request' in linea:
-					try:
-						usuario = re.search(r'Peer-ID=\'([\@A-Za-z0-9_\./\\-]*)\'', linea).group(1)
-					except:
-						pass
-					try:
-						password = re.search(r'Password=\'([\@A-Za-z0-9_\./\\-]*)\'', linea).group(1)
-					except:
-						pass
-					if usuario != "" and password != "":
-						print('\033[K')
-						print(amarillo + "\033[K¡¡¡ CREDENCIALES PPPoE ENCONTRADAS !!!" + gris)
-						print('\033[K')
-						print(verde + "\033[KUsuario.....: " + blanco + str(usuario) + gris)
-						print(verde + "\033[KContraseña..: " + blanco + str(password) + gris)
-						print('\033[K')
-						mostrar_tiempo(inicio)
-						print('\033[K')
-						guardar_log('Credenciales encontradas')
-						calcular_paquetes_capturados()
-						break
-			archivo.close()
+			# cambiamos la VLAN
+			interfaz_vlan = "sniffer." + str(vlan)
+			print()
+			guardar_log('Creando interfaz virtual VLAN ' + str(vlan))
+			#    eliminamos todas las interfaces virtuales que pudiera haber creadas
+			guardar_log('   Eliminando interfaces virtuales existentes')
+			todas = netifaces.interfaces()
+			for item in todas:
+				if "." in item:
+					guardar_log('      Eliminando ' + item)
+					subprocess.run(["sudo", "ip", "link", "delete", item])
+					guardar_log('      Eliminada ' + item)
+			# creamos la interfaz virtual
+			print(azul + "\033[K   Creando interfaz virtual VLAN " + blanco + str(vlan) + azul + ": " + blanco + interfaz_vlan + gris)
+			try:
+				subprocess.run(["sudo", "ip", "link", "add", "link", interfaz, "name", interfaz_vlan, "type", "vlan", "id", str(vlan)])
+				print(verde + "\033[K      Interfaz " + blanco + interfaz_vlan + verde + " creada" + gris)
+				guardar_log('   Interfaz virtual creada')
+			except Exception as e:
+				print(rojo + "\033[K      ERROR" + gris)
+				print()
+				print(blanco + str(e) + gris)
+				print()
+				guardar_log('   ERROR al crear la interfaz virtual')
+				sys.exit()
+			# asignamos una IP a la interfaz virtual
+			print(azul + "\033[K   Asignando IP a " + blanco + interfaz_vlan + gris)
+			guardar_log('Asignando IP a ' + str(interfaz_vlan))
+			try:
+				subprocess.run(["sudo", "ip", "addr", "flush", "dev", interfaz_vlan])
+				subprocess.run(["sudo", "ip", "addr", "add", "10.0.0.1/16", "dev", interfaz_vlan])
+				print(verde + "\033[K      Hecho" + gris)
+				guardar_log('   IP asignada')
+			except Exception as e:
+				print(rojo + "\033[K      ERROR" + gris)
+				print()
+				print(blanco + str(e) + gris)
+				print()
+				guardar_log('   ERROR al asignar la IP')
+				sys.exit()
+			# levantamos la interfaz virtual
+			print(azul + "\033[K   Levantando interfaz " + blanco + interfaz_vlan + gris)
+			guardar_log('Levantando interfaz ' + str(interfaz_vlan))
+			try:
+				subprocess.run(["sudo", "ip", "link", "set", interfaz_vlan, "up"])
+				print(verde + "\033[K      Hecho" + gris)
+				guardar_log('   Interfaz levantada')
+			except Exception as e:
+				print(rojo + "\033[K      ERROR" + gris)
+				print()
+				print(blanco + str(e) + gris)
+				print()
+				guardar_log('   ERROR al levantar la interfaz')
+				sys.exit()
+			# informamos de cómo proceder antes de continuar
+			print(gris)
+			print(azul + "\033[KYA ESTÁ TODO PREPARADO PARA CAPTURAR EL TRÁFICO DEL ROUTER." + gris)
+			print(azul + "\033[KA PARTIR DE ESTE PUNTO YA NO ES NECESARIO ESTAR CONECTADO A INTERNET" + gris)
+			print(azul + "\033[KASÍ QUE, SI QUIERES O LO NECESITAS PARA CONTINUAR, PUEDES DESCONECTARTE." + gris)
+			print(azul + "\033[KCONECTA UN CABLE DE RED DESDE EL ORDENADOR AL PUERTO WAN DEL ROUTER Y ENCIÉNDELO." + gris)
+			print(gris)
+			if(opcion != 0):
+				input(blanco + "\033[KPulsa ENTER cuando estés listo... " + gris)
+			cursor_arriba()
+			matar_procesos()
+			# iniciamos el servidor PPPoE
+			print(azul + "\033[K   Iniciando servidor PPPoE" + gris)
+			try:
+				guardar_log('Iniciando el servidor PPPoE')
+				subprocess.run(["sudo", "pppoe-server", "-C", "ftth", "-I", interfaz_vlan, "-N", "256", "-O", "/etc/ppp/options"])
+				print(verde + "\033[K      Hecho" + gris)
+				guardar_log('   Servidor PPPoE iniciado')
+			except Exception as e:
+				print(rojo + "\033[K      ERROR" + gris)
+				print()
+				print(blanco + str(e) + gris)
+				print()
+				guardar_log('   ERROR: No se ha podido iniciar el servidor PPPoE')
+				sys.exit()
+			# capturamos el tráfico con Tshark
+			print(azul + "\033[K   Iniciando captura de tráfico de red" + gris)
+			try:
+				guardar_log('Iniciando captura de tráfico con "tshark"')
+				subprocess.Popen(["sudo", "tshark", "-i", interfaz_vlan, "-T", "text"], stdout=open(str(path.home()) + "/" + NOMBRE + "/captura.txt", "wb"), stderr=open(os.devnull, 'w'))
+				print(verde + "\033[K      Hecho" + gris)
+				guardar_log('   Captura iniciada')
+			except Exception as e:
+				print(rojo + "\033[K      ERROR" + gris)
+				print()
+				print(blanco + str(e) + gris)
+				print()
+				guardar_log('   ERROR: No se ha podido iniciar la captura')
+				sys.exit()
+			print()
+			print(amarillo + "\33[K   Puedes detener el proceso en cualquier momento pulsando " + blanco + "CTRL+C" + gris)
+			print()
+			usuario = ""
+			password = ""
+			inicio = datetime.datetime.now()
+			t_end = time.time() + duracion
+			while usuario == "" and password == "" and (opcion != 0 or time.time() < t_end):
+				# mostramos animación de reloj con el tiempo transcurrido
+				animacion_reloj("BUSCANDO...", inicio)
+				archivo = open(str(path.home()) + "/" + NOMBRE + "/captura.txt", "r", encoding="utf-8")
+				for linea in archivo:
+					if 'Authenticate-Request' in linea:
+						try:
+							usuario = re.search(r'Peer-ID=\'([\@A-Za-z0-9_\./\\-]*)\'', linea).group(1)
+						except:
+							pass
+						try:
+							password = re.search(r'Password=\'([\@A-Za-z0-9_\./\\-]*)\'', linea).group(1)
+						except:
+							pass
+						if usuario != "" and password != "":
+							print('\033[K')
+							print(amarillo + "\033[K¡¡¡ CREDENCIALES PPPoE ENCONTRADAS !!!" + gris)
+							print('\033[K')
+							print(verde + "\033[KUsuario.....: " + blanco + str(usuario) + gris)
+							print(verde + "\033[KContraseña..: " + blanco + str(password) + gris)
+							print('\033[K')
+							mostrar_tiempo(inicio)
+							print('\033[K')
+							guardar_log('Credenciales encontradas')
+							calcular_paquetes_capturados()
+							break
+				archivo.close()
+			if usuario != "" and password != "":
+				print('\033[K')
+				print(amarillo + "\033[K¡¡¡ VLAN IDENTIFICADA !!!" + gris)
+				print('\033[K')
+				print(verde + "\033[KUsuario.....: " + blanco + str(usuario) + gris)
+				print(verde + "\033[KContraseña..: " + blanco + str(password) + gris)
+				print(verde + "\033[KVLAN..: " + blanco + str(vlan) + gris)
+				print('\033[K')
+			print(rojo + "\033[KFinalizada busqueda en esta VLAN" + vlan + gris)
+			print('\033[K')
+			guardar_log('Finalizada vlan')
+			calcular_paquetes_capturados()
+			mostrar_log()
 		except KeyboardInterrupt:
 			print(rojo + "\033[KInterrumpido por el usuario" + gris)
 			print('\033[K')
@@ -574,6 +628,7 @@ if __name__ == '__main__':
 			sys.exit()
 		except:
 			pass
+		vlan = vlan+1
 	print(gris + "\033[KDeteniendo captura" + gris)
 	matar_procesos()
 	cursor_arriba()
