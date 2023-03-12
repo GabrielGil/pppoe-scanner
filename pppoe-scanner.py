@@ -71,11 +71,11 @@ def cursor_arriba(n=1):
 
 # CREA UN CUADRO CON UN TEXTO DENTRO
 def cuadro(texto):
-    linea = "─"
-    caracteres = len(texto) + 2
-    print(amarillo + "┌" + linea*caracteres + "┐")
-    print(amarillo + "│ " + blanco + texto + amarillo + " │")
-    print(amarillo + "└" + linea*caracteres + "┘\n" + gris)
+	linea = "─"
+	caracteres = len(texto) + 2
+	print(amarillo + "┌" + linea*caracteres + "┐")
+	print(amarillo + "│ " + blanco + texto + amarillo + " │")
+	print(amarillo + "└" + linea*caracteres + "┘\n" + gris)
 
 # TERMINA TODOS LOS PROCESOS QUE EJECUTA ESTE SCRIPT
 def matar_procesos():
@@ -115,34 +115,34 @@ def animacion_reloj(texto, inicio):
 
 # MUESTRA CUANTOS MINUTOS Y SEGUNDOS HAN PASADO DESDE EL TIEMPO INDICADO
 def mostrar_tiempo(empieza):
-    minutos = 0
-    segundos = (datetime.datetime.now() - empieza).seconds # segundos que han pasado en total
-    if segundos > 0:
-        if segundos >= 60: # si ha tardado 1 minuto o más
-            color = rojo # se muestra la información de color rojo (para que destaque más)
-        else:
-            color = verde # sinó se mostrará de color verde
-        minutos = int(segundos / 60) # minutos que han pasado
-        segundos = segundos - (minutos * 60) # segundos que quedan al restar los minutos en segundos
-        print(verde + "COMPLETADO" + color + " en ",end="")
-        if minutos != 0:
-            if minutos == 1:
-                print(blanco + "1" + color + " minuto",end="")
-            else:
-                print(blanco + str(minutos) + color + " minutos",end="")
-            if segundos != 0:
-                print(color + " y ",end="")
-        if segundos != 0:
-            if segundos == 1:
-                print(blanco + "1" + color + " segundo",end="")
-            else:
-                print(blanco + str(segundos) + color + " segundos",end="")
-        else:
-            if minutos == 0:
-                print(blanco + str(segundos) + color + " segundos",end="")
-        print(gris)
-    print(gris)
-    return minutos, segundos
+	minutos = 0
+	segundos = (datetime.datetime.now() - empieza).seconds # segundos que han pasado en total
+	if segundos > 0:
+		if segundos >= 60: # si ha tardado 1 minuto o más
+			color = rojo # se muestra la información de color rojo (para que destaque más)
+		else:
+			color = verde # sinó se mostrará de color verde
+		minutos = int(segundos / 60) # minutos que han pasado
+		segundos = segundos - (minutos * 60) # segundos que quedan al restar los minutos en segundos
+		print(verde + "COMPLETADO" + color + " en ",end="")
+		if minutos != 0:
+			if minutos == 1:
+				print(blanco + "1" + color + " minuto",end="")
+			else:
+				print(blanco + str(minutos) + color + " minutos",end="")
+			if segundos != 0:
+				print(color + " y ",end="")
+		if segundos != 0:
+			if segundos == 1:
+				print(blanco + "1" + color + " segundo",end="")
+			else:
+				print(blanco + str(segundos) + color + " segundos",end="")
+		else:
+			if minutos == 0:
+				print(blanco + str(segundos) + color + " segundos",end="")
+		print(gris)
+	print(gris)
+	return minutos, segundos
 
 # GUARDA EN EL ARCHIVO LOG EL CÓDIGO DE TIEMPO Y EL MENSAJE INDICADO
 def guardar_log(mensaje):
@@ -585,15 +585,15 @@ if __name__ == '__main__':
 """
 LISTA DE CAMBIOS:
 2020-10-29
-    - Versión inicial: Obtiene las credencias PPPoE de VLAN20 (DiGi)
+	- Versión inicial: Obtiene las credencias PPPoE de VLAN20 (DiGi)
 2020-11-01
-    - Añadida opción para seleccionar operador FTTH para personalizar VLAN
-    - Añadida opción de introducir VLAN manualmente
+	- Añadida opción para seleccionar operador FTTH para personalizar VLAN
+	- Añadida opción de introducir VLAN manualmente
 2020-11-06
 	- Añadido registro log para corrección de errores
 	  (se muestra al pulsar CONTROL+C durante la captura)
 2021-05-03
-    - Ahora la interfaz vlan ya no conserva el nombre de la original (ahora se llama sniffer + vlan)
-      debido a que algunos usuarios han reportado que si el nombre de la interfaz original es muy largo
-      esto causaba problemas. Gracias a JuanRa y a Miji por el aviso.
+	- Ahora la interfaz vlan ya no conserva el nombre de la original (ahora se llama sniffer + vlan)
+	  debido a que algunos usuarios han reportado que si el nombre de la interfaz original es muy largo
+	  esto causaba problemas. Gracias a JuanRa y a Miji por el aviso.
 """
